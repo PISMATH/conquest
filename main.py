@@ -1,20 +1,6 @@
 import pygame
 from config import *
-from territory import territory
-from images import map_image
-
-class world:
-    def __init__(self) -> None:
-        self.territories: list[territory] = []
-
-    def update(self, dt) -> None:
-        for territory in self.territories:
-            territory.update(dt)
-
-    def render(self, screen) -> None:
-        screen.blit(map_image, (0, 0))
-        for territory in self.territories:
-            territory.render(screen)
+from world import world
 
 class game:
     def __init__(self) -> None:
@@ -22,19 +8,23 @@ class game:
         
         self.screen = pygame.display.set_mode([screen_width, screen_height])
         self.clock = pygame.time.Clock()
-        self.map = world()
+        self.world = world()
         self.running = True
 
     def update(self, dt) -> None:
-        self.map.update(dt)
+        self.world.update(dt)
 
     def render(self) -> None:
-        self.map.render(self.screen)
+        self.world.render(self.screen)
 
     def handle_events(self, events) -> None:
         for event in events:
             if event.type == pygame.QUIT:
                 self.running = False
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                self.world.new_territory(pos)
 
     def run(self) -> None:
         while self.running:
