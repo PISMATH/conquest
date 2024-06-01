@@ -12,7 +12,7 @@ class world:
 
     def update(self, dt) -> None:
         for territory in self.territories:
-            territory.update(dt)
+            territory.update(dt, self.territories)
 
     def render(self, screen) -> None:
         screen.blit(map_image, (0, 0))

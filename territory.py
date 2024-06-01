@@ -33,14 +33,42 @@ class territory:
         if div == 0:
             return 0, 0
         return y_diff / div, -x_diff / div
+    
+    def point_in_area(self, point) -> bool:
+        x, y = point
+        n = len(self.points)
+        inside = False
 
-    def update(self, dt):
+        p1x, p1y = self.points[0]
+        for i in range(1, n + 1):
+            p2x, p2y = self.points[i % n]
+            if min(p1y, p2y) < y <= max(p1y, p2y) and x <= max(p1x, p2x):
+                if p1y != p2y:
+                    xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+
+                if p1x == p2x or x <= xinters:
+                    inside = not inside
+
+            p1x, p1y = p2x, p2y
+
+        return inside
+
+    def update(self, dt, other_territories):
         move_dist = dt * self.growth_rate
         for index in self.active_point_indices:
             p_x, p_y = self.points[index]
             normal_x, normal_y = self.find_normal(index)
-            new_point = [p_x + normal_x * self.growth_rate, p_y + normal_y * self.growth_rate]
+            new_point = [p_x + normal_x * move_dist, p_y + normal_y * move_dist]
             self.points[index] = new_point
+        
+        for territory in other_territories:
+            if territory == self:
+                continue
+            for index in self.active_point_indices:
+                point = self.points[index]
+                if territory.point_in_area(point):
+                    self.active_point_indices.remove(index)
+        
 
     def render(self, screen):
         render_surface = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
