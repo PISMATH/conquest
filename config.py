@@ -8,3 +8,4 @@ territory_base_growth_rate = 10
 territory_growth_rate_upgrade = 5
 
 territory_alpha = 128
+territory_colors = [[255, 0, 0], [0, 255, 0], [0, 0, 255]]

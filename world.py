@@ -7,8 +7,8 @@ class world:
     def __init__(self) -> None:
         self.territories: list[territory] = []
 
-    def new_territory(self, pos):
-        self.territories.append(territory(pos, [255, 0, 0], territory_alpha))
+    def new_territory(self, pos, color):
+        self.territories.append(territory(pos, color, territory_alpha))
 
     def update(self, dt) -> None:
         for territory in self.territories:

@@ -10,7 +10,8 @@ class game:
         self.clock = pygame.time.Clock()
         self.world = world()
         self.running = True
-
+        self.color = 0
+        
     def update(self, dt) -> None:
         self.world.update(dt)
 
@@ -24,8 +25,18 @@ class game:
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
-                self.world.new_territory(pos)
+                self.world.new_territory(pos, territory_colors[self.color])
 
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_1:
+                    self.color = 0
+
+                elif event.key == pygame.K_2:
+                    self.color = 1
+
+                elif event.key == pygame.K_3:
+                    self.color = 2
+                
     def run(self) -> None:
         while self.running:
             events = pygame.event.get()
