@@ -6,11 +6,17 @@ from math import sin, cos, sqrt, pi
 class territory:
     def __init__(self, pos, color, alpha) -> None:
         self.points = []
-        self.active_point_indices = []
+        self.active_point_indices = set()
         self.set_inital_points(pos)
         self.color = color
         self.alpha = alpha
         self.growth_rate = territory_base_growth_rate
+
+    def dist_sqr(self, p1, p2):
+        return (p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2
+    
+    def mid_point(self, p1, p2):
+        return (p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2
 
     def set_inital_points(self, center):
         for i in range(territory_inital_vertices_count):
@@ -20,8 +26,17 @@ class territory:
                  center[1] + cos(angle) * territory_inital_size]
             )
         
-        self.active_point_indices = list(range(territory_inital_vertices_count))
+        self.active_point_indices = set(range(territory_inital_vertices_count))
     
+    def add_point(self, index, point):
+        self.points.insert(index, point)
+        for i, point_index in enumerate(self.active_point_indices.copy()):
+            if point_index >= index:
+                new_index = (point_index + 1) % len(self.points)
+                self.active_point_indices.add(new_index)
+        
+        self.active_point_indices.add(index)
+        
     def find_normal(self, index):
         x1, y1 = self.points[index - 1]
         x2, y2 = self.points[(index + 1) % len(self.points)]
@@ -54,6 +69,16 @@ class territory:
         return inside
 
     def update(self, dt, other_territories):
+        # intersect
+        for territory in other_territories:
+            if territory == self:
+                continue
+            for index in self.active_point_indices.copy():
+                point = self.points[index]
+                if territory.point_in_area(point):
+                    self.active_point_indices.remove(index)
+        
+        # grow
         move_dist = dt * self.growth_rate
         for index in self.active_point_indices:
             p_x, p_y = self.points[index]
@@ -61,15 +86,13 @@ class territory:
             new_point = [p_x + normal_x * move_dist, p_y + normal_y * move_dist]
             self.points[index] = new_point
         
-        for territory in other_territories:
-            if territory == self:
-                continue
-            for index in self.active_point_indices:
-                point = self.points[index]
-                if territory.point_in_area(point):
-                    self.active_point_indices.remove(index)
-        
-
+        # split
+        for i, point in enumerate(self.points):
+            second_point = self.points[i - 1]
+            if self.dist_sqr(point, second_point) > territory_line_max_len ** 2:
+                mid_point = self.mid_point(point, second_point)
+                self.add_point(i, mid_point)
+            
     def render(self, screen):
         render_surface = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
         color = self.color + [self.alpha]
